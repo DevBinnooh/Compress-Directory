@@ -29,7 +29,7 @@
  * @link       http://pear.php.net/package/File_Archive
  */
 
-require_once "File/Archive/Reader/Relay.php";
+require_once realpath(dirname(__FILE__))."/Relay.php";
 
 /**
  * Base class for readers that need to modify the name of files

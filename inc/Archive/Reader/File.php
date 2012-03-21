@@ -29,7 +29,7 @@
  * @link       http://pear.php.net/package/File_Archive
  */
 
-require_once "File/Archive/Reader.php";
+require_once realpath(dirname(__DIR__))."/Reader.php";
 require_once "MIME/Type.php";
 
 /**

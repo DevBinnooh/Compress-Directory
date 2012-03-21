@@ -272,7 +272,7 @@ class File_Archive
                   $uncompression = 0, $directoryDepth = -1)
     {
         $source =& File_Archive::_convertToReader($toConvert);
-        if (PEAR::isError($source)) {
+        if (is_a($source, 'PEAR_Error')) {
             return $source;
         }
         if (is_array($URL)) {
@@ -292,7 +292,7 @@ class File_Archive
             $uncompressionLevel = $uncompression;
         }
 
-        require_once 'File/Archive/Reader.php';
+        require_once __DIR__.'/Archive/Reader.php';
         $std = File_Archive_Reader::getStandardURL($URL);
 
         //Modify the symbolic name if necessary
@@ -332,10 +332,10 @@ class File_Archive
 
         //If the URL can be interpreted as a directory, and we are reading from the file system
         if ((empty($URL) || is_dir($URL)) && $source === null) {
-            require_once "File/Archive/Reader/Directory.php";
+            require_once __DIR__."/Archive/Reader/Directory.php";
 
             if ($uncompressionLevel != 0) {
-                require_once "File/Archive/Reader/Uncompress.php";
+                require_once __DIR__."/Archive/Reader/Uncompress.php";
                 $result = new File_Archive_Reader_Uncompress(
                     new File_Archive_Reader_Directory($std, '', $directoryDepth),
                     $uncompressionLevel
@@ -345,8 +345,8 @@ class File_Archive
             }
 
             if ($directoryDepth >= 0) {
-                require_once 'File/Archive/Reader/Filter.php';
-                require_once 'File/Archive/Predicate/MaxDepth.php';
+                require_once __DIR__.'/Archive/Reader/Filter.php';
+                require_once __DIR__.'/Archive/Predicate/MaxDepth.php';
 
                 $tmp =& File_Archive::filter(
                     new File_Archive_Predicate_MaxDepth($directoryDepth),
@@ -359,7 +359,8 @@ class File_Archive
                 if ($symbolic === null) {
                     $realSymbolic = '';
                 }
-                require_once "File/Archive/Reader/ChangeName/AddDirectory.php";
+                require_once __DIR__."/Archive/Reader/ChangeName/AddDirectory.php";
+                //Deprecated: Assigning the return value of new by reference is deprecated in C:\xampp\htdocs\compress\inc\Archive.php on line 363
                 $tmp =& new File_Archive_Reader_ChangeName_AddDirectory(
                     $realSymbolic,
                     $result
@@ -370,12 +371,12 @@ class File_Archive
 
         //If the URL can be interpreted as a file, and we are reading from the file system
         } else if (is_file($URL) && substr($URL, -1)!='/' && $source === null) {
-            require_once "File/Archive/Reader/File.php";
+            require_once __DIR__."/Archive/Reader/File.php";
             $result = new File_Archive_Reader_File($URL, $realSymbolic);
 
         //Else, we will have to build a complex reader
         } else {
-            require_once "File/Archive/Reader/File.php";
+            require_once __DIR__."/Archive/Reader/File.php";
 
             $realPath = $std;
 
@@ -412,11 +413,11 @@ class File_Archive
             } else {
                 //Select in the source the file $file
 
-                require_once "File/Archive/Reader/Select.php";
+                require_once __DIR__."/Archive/Reader/Select.php";
                 $result = new File_Archive_Reader_Select($file, $source);
             }
 
-            require_once "File/Archive/Reader/Uncompress.php";
+            require_once __DIR__."/Archive/Reader/Uncompress.php";
             $tmp = new File_Archive_Reader_Uncompress($result, $uncompressionLevel);
             unset($result);
             $result = $tmp;
@@ -433,8 +434,8 @@ class File_Archive
 
             if ($directoryDepth >= 0) {
                 //Limit the maximum depth if necessary
-                require_once "File/Archive/Reader/Filter.php";
-                require_once "File/Archive/Predicate/MaxDepth.php";
+                require_once __DIR__."/Archive/Reader/Filter.php";
+                require_once __DIR__."/Archive/Predicate/MaxDepth.php";
 
                 $tmp = new File_Archive_Reader_Filter(
                     new File_Archive_Predicate(
@@ -448,7 +449,7 @@ class File_Archive
             }
 
             if ($std != $realSymbolic) {
-                require_once "File/Archive/Reader/ChangeName/Directory.php";
+                require_once __DIR__."/Archive/Reader/ChangeName/Directory.php";
 
                 //Change the base name to the symbolic one if necessary
                 $tmp = new File_Archive_Reader_ChangeName_Directory(
@@ -494,7 +495,7 @@ class File_Archive
     function readUploadedFile($name)
     {
         if (!isset($_FILES[$name])) {
-            return PEAR::raiseError("File $name has not been uploaded");
+            return PEAR::raiseError(__DIR__." $name has not been uploaded");
         }
         switch ($_FILES[$name]['error']) {
         case 0:
@@ -528,7 +529,7 @@ class File_Archive
             return PEAR::raiseError("The file is not an uploaded file");
         }
 
-        require_once "File/Archive/Reader/File.php";
+        require_once __DIR__."/Archive/Reader/File.php";
         return new File_Archive_Reader_File(
                     $_FILES[$name]['tmp_name'],
                     $_FILES[$name]['name'],
@@ -553,7 +554,7 @@ class File_Archive
             return $source;
         }
 
-        require_once 'File/Archive/Reader/Cache.php';
+        require_once __DIR__.'/Archive/Reader/Cache.php';
         return new File_Archive_Reader_Cache($source);
     }
 
@@ -596,7 +597,7 @@ class File_Archive
             $obj =& File_Archive::appender($dest);
             return $obj;
         } else if (is_array($dest)) {
-            require_once 'File/Archive/Writer/Multi.php';
+            require_once __DIR__.'/Archive/Writer/Multi.php';
             $writer = new File_Archive_Writer_Multi();
             foreach($dest as $key => $foo) {
                 $writer->addWriter($dest[$key]);
@@ -665,27 +666,27 @@ class File_Archive
                     File_Archive::readArchive('bz2', $source, $sourceOpened)
                     );
         case 'tar':
-            require_once 'File/Archive/Reader/Tar.php';
+            require_once __DIR__.'/Archive/Reader/Tar.php';
             return new File_Archive_Reader_Tar($source, $sourceOpened);
 
         case 'gz':
         case 'gzip':
-            require_once 'File/Archive/Reader/Gzip.php';
+            require_once __DIR__.'/Archive/Reader/Gzip.php';
             return new File_Archive_Reader_Gzip($source, $sourceOpened);
 
         case 'zip':
         case 'jar':
-            require_once 'File/Archive/Reader/Zip.php';
+            require_once __DIR__.'/Archive/Reader/Zip.php';
             return new File_Archive_Reader_Zip($source, $sourceOpened);
 
         case 'bz2':
         case 'bzip2':
-            require_once 'File/Archive/Reader/Bzip2.php';
+            require_once __DIR__.'/Archive/Reader/Bzip2.php';
             return new File_Archive_Reader_Bzip2($source, $sourceOpened);
 
         case 'deb':
         case 'ar':
-            require_once 'File/Archive/Reader/Ar.php';
+            require_once __DIR__.'/Archive/Reader/Ar.php';
             return new File_Archive_Reader_Ar($source, $sourceOpened);
 
 /*        case 'cab':
@@ -694,7 +695,7 @@ class File_Archive
 
 
         case 'rar':
-            require_once "File/Archive/Reader/Rar.php";
+            require_once __DIR__."/Archive/Reader/Rar.php";
             return new File_Archive_Reader_Rar($source, $sourceOpened); */
 
         default:
@@ -715,7 +716,7 @@ class File_Archive
      */
     function readMemory($memory, $filename, $stat=array(), $mime=null)
     {
-        require_once "File/Archive/Reader/Memory.php";
+        require_once __DIR__."/Archive/Reader/Memory.php";
         return new File_Archive_Reader_Memory($memory, $filename, $stat, $mime);
     }
 
@@ -731,7 +732,7 @@ class File_Archive
      */
     function readMulti($sources = array())
     {
-        require_once "File/Archive/Reader/Multi.php";
+        require_once __DIR__."/Archive/Reader/Multi.php";
         $result = new File_Archive_Reader_Multi();
         foreach ($sources as $index => $foo) {
             $s =& File_Archive::_convertToReader($sources[$index]);
@@ -763,7 +764,7 @@ class File_Archive
             return $source;
         }
 
-        require_once "File/Archive/Reader/Concat.php";
+        require_once __DIR__."/Archive/Reader/Concat.php";
         return new File_Archive_Reader_Concat($source, $filename, $stat, $mime);
     }
 
@@ -787,7 +788,7 @@ class File_Archive
             return $source;
         }
 
-        require_once "File/Archive/Reader/ChangeName.php";
+        require_once __DIR__."/Archive/Reader/ChangeName.php";
         return new File_Archive_Reader_RemoveDirectory($source);
     }
 
@@ -806,7 +807,7 @@ class File_Archive
             return $source;
         }
 
-        require_once "File/Archive/Reader/Filter.php";
+        require_once __DIR__."/Archive/Reader/Filter.php";
         return new File_Archive_Reader_Filter($predicate, $source);
     }
     /**
@@ -816,7 +817,7 @@ class File_Archive
      */
     function predTrue()
     {
-        require_once "File/Archive/Predicate/True.php";
+        require_once __DIR__."/Archive/Predicate/True.php";
         return new File_Archive_Predicate_True();
     }
     /**
@@ -826,7 +827,7 @@ class File_Archive
      */
     function predFalse()
     {
-        require_once "File/Archive/Predicate/False.php";
+        require_once __DIR__."/Archive/Predicate/False.php";
         return new File_Archive_Predicate_False();
     }
     /**
@@ -839,7 +840,7 @@ class File_Archive
      */
     function predAnd()
     {
-        require_once "File/Archive/Predicate/And.php";
+        require_once __DIR__."/Archive/Predicate/And.php";
         $pred = new File_Archive_Predicate_And();
         $args = func_get_args();
         foreach ($args as $p) {
@@ -857,7 +858,7 @@ class File_Archive
      */
     function predOr()
     {
-        require_once "File/Archive/Predicate/Or.php";
+        require_once __DIR__."/Archive/Predicate/Or.php";
         $pred = new File_Archive_Predicate_Or();
         $args = func_get_args();
         foreach ($args as $p) {
@@ -873,7 +874,7 @@ class File_Archive
      */
     function predNot($pred)
     {
-        require_once "File/Archive/Predicate/Not.php";
+        require_once __DIR__."/Archive/Predicate/Not.php";
         return new File_Archive_Predicate_Not($pred);
     }
     /**
@@ -884,7 +885,7 @@ class File_Archive
      */
     function predMinSize($size)
     {
-        require_once "File/Archive/Predicate/MinSize.php";
+        require_once __DIR__."/Archive/Predicate/MinSize.php";
         return new File_Archive_Predicate_MinSize($size);
     }
     /**
@@ -896,7 +897,7 @@ class File_Archive
      */
     function predMinTime($time)
     {
-        require_once "File/Archive/Predicate/MinTime.php";
+        require_once __DIR__."/Archive/Predicate/MinTime.php";
         return new File_Archive_Predicate_MinTime($time);
     }
     /**
@@ -908,7 +909,7 @@ class File_Archive
      */
     function predMaxDepth($depth)
     {
-        require_once "File/Archive/Predicate/MaxDepth.php";
+        require_once __DIR__."/Archive/Predicate/MaxDepth.php";
         return new File_Archive_Predicate_MaxDepth($depth);
     }
     /**
@@ -920,7 +921,7 @@ class File_Archive
      */
     function predExtension($list)
     {
-        require_once "File/Archive/Predicate/Extension.php";
+        require_once __DIR__."/Archive/Predicate/Extension.php";
         return new File_Archive_Predicate_Extension($list);
     }
     /**
@@ -933,7 +934,7 @@ class File_Archive
      */
     function predMIME($list)
     {
-        require_once "File/Archive/Predicate/MIME.php";
+        require_once __DIR__."/Archive/Predicate/MIME.php";
         return new File_Archive_Predicate_MIME($list);
     }
     /**
@@ -945,7 +946,7 @@ class File_Archive
      */
     function predEreg($ereg)
     {
-        require_once "File/Archive/Predicate/Ereg.php";
+        require_once __DIR__."/Archive/Predicate/Ereg.php";
         return new File_Archive_Predicate_Ereg($ereg);
     }
     /**
@@ -957,7 +958,7 @@ class File_Archive
      */
     function predEregi($ereg)
     {
-        require_once "File/Archive/Predicate/Eregi.php";
+        require_once __DIR__."/Archive/Predicate/Eregi.php";
         return new File_Archive_Predicate_Eregi($ereg);
     }
     /**
@@ -971,7 +972,7 @@ class File_Archive
      */
     function predIndex($indexes)
     {
-        require_once "File/Archive/Predicate/Index.php";
+        require_once __DIR__."/Archive/Predicate/Index.php";
         return new File_Archive_Predicate_Index($indexes);
     }
     /**
@@ -998,7 +999,7 @@ class File_Archive
      */
     function predCustom($expression)
     {
-        require_once "File/Archive/Predicate/Custom.php";
+        require_once __DIR__."/Archive/Predicate/Custom.php";
         return new File_Archive_Predicate_Custom($expression);
     }
 
@@ -1015,7 +1016,7 @@ class File_Archive
      */
     function toMail($to, $headers, $message, $mail = null)
     {
-        require_once "File/Archive/Writer/Mail.php";
+        require_once __DIR__."/Archive/Writer/Mail.php";
         return new File_Archive_Writer_Mail($to, $headers, $message, $mail);
     }
     /**
@@ -1028,7 +1029,7 @@ class File_Archive
      */
     function toFiles($baseDir = "")
     {
-        require_once "File/Archive/Writer/Files.php";
+        require_once __DIR__."/Archive/Writer/Files.php";
         return new File_Archive_Writer_Files($baseDir);
     }
     /**
@@ -1052,7 +1053,7 @@ class File_Archive
     }
     function toVariable(&$v)
     {
-        require_once "File/Archive/Writer/Memory.php";
+        require_once __DIR__."/Archive/Writer/Memory.php";
         return new File_Archive_Writer_Memory($v);
     }
     /**
@@ -1073,7 +1074,7 @@ class File_Archive
             return $b;
         }
 
-        require_once "File/Archive/Writer/Multi.php";
+        require_once __DIR__."/Archive/Writer/Multi.php";
         $writer = new File_Archive_Writer_Multi();
         $writer->addWriter($a);
         $writer->addWriter($b);
@@ -1089,7 +1090,7 @@ class File_Archive
      */
     function toOutput($sendHeaders = true)
     {
-        require_once "File/Archive/Writer/Output.php";
+        require_once __DIR__."/Archive/Writer/Output.php";
         return new File_Archive_Writer_Output($sendHeaders);
     }
     /**
@@ -1133,14 +1134,14 @@ class File_Archive
             unset($next);
             switch($extension) {
             case "tar":
-                require_once "File/Archive/Writer/Tar.php";
+                require_once __DIR__."/Archive/Writer/Tar.php";
                 $next = new File_Archive_Writer_Tar(
                     $currentFilename, $writer, $stat, $autoClose
                 );
                 unset($writer); $writer =& $next;
                 break;
             case "zip":
-                require_once "File/Archive/Writer/Zip.php";
+                require_once __DIR__."/Archive/Writer/Zip.php";
                 $next = new File_Archive_Writer_Zip(
                     $currentFilename, $writer, $stat, $autoClose
                 );
@@ -1148,7 +1149,7 @@ class File_Archive
                 break;
             case "gz":
             case "gzip":
-                require_once "File/Archive/Writer/Gzip.php";
+                require_once __DIR__."/Archive/Writer/Gzip.php";
                 $next = new File_Archive_Writer_Gzip(
                     $currentFilename, $writer, $stat, $autoClose
                 );
@@ -1156,7 +1157,7 @@ class File_Archive
                 break;
             case "bz2":
             case "bzip2":
-                require_once "File/Archive/Writer/Bzip2.php";
+                require_once __DIR__."/Archive/Writer/Bzip2.php";
                 $next = new File_Archive_Writer_Bzip2(
                     $currentFilename, $writer, $stat, $autoClose
                 );
@@ -1164,7 +1165,7 @@ class File_Archive
                 break;
             case "deb":
             case "ar":
-                require_once "File/Archive/Writer/Ar.php";
+                require_once __DIR__."/Archive/Writer/Ar.php";
                 $next = new File_Archive_Writer_Ar(
                     $currentFilename, $writer, $stat, $autoClose
                 );
@@ -1281,7 +1282,7 @@ class File_Archive
 
         if (!PEAR::isError($result)) {
             if ($unique) {
-                require_once "File/Archive/Writer/UniqueAppender.php";
+                require_once __DIR__."/Archive/Writer/UniqueAppender.php";
                 return new File_Archive_Writer_UniqueAppender($result);
             } else {
                 return $result->makeAppendWriter();
@@ -1323,7 +1324,7 @@ class File_Archive
             PEAR::popErrorHandling();
 
             if (PEAR::isError($result)) {
-                require_once "File/Archive/Writer/AddBaseName.php";
+                require_once __DIR__."/Archive/Writer/AddBaseName.php";
                 $result = new File_Archive_Writer_AddBaseName(
                                        $baseDir, $writer);
                 if (PEAR::isError($result)) {
@@ -1411,7 +1412,7 @@ class File_Archive
             $source = File_Archive::read($URL);
         }
 
-        require_once "File/Archive/Predicate/Duplicate.php";
+        require_once __DIR__."/Archive/Predicate/Duplicate.php";
         $pred = new File_Archive_Predicate_Duplicate($source);
         $source->close();
         return File_Archive::removeFromSource(
