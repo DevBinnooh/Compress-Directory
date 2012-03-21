@@ -29,8 +29,8 @@
  * @link       http://pear.php.net/package/File_Archive
  */
 
-require_once "File/Archive/Reader/Relay.php";
-require_once "File/Archive/Reader/File.php";
+require_once realpath(dirname(__FILE__))."/Relay.php";
+require_once realpath(dirname(__FILE__))."/File.php";
 
 /**
  * Recursively reads a directory
@@ -291,7 +291,7 @@ class File_Archive_Reader_Directory extends File_Archive_Reader_Relay
      */
     function makeAppendWriter()
     {
-        require_once "File/Archive/Writer/Files.php";
+        require_once realpath(dirname(__DIR__))."/Writer/Files.php";
 
         if ($this->source === null ||
             is_a($this->source, 'File_Archive_Reader_File') ) {

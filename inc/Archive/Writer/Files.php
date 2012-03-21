@@ -29,7 +29,7 @@
  * @link       http://pear.php.net/package/File_Archive
  */
 
-require_once "File/Archive/Writer.php";
+require_once realpath(dirname(__DIR__))."/Writer.php";
 
 /**
   * Writer to files
